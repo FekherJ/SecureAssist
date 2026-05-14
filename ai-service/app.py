@@ -24,7 +24,7 @@ def health():
         "status": "ok",
         "service": "secureassist-ai",
         "provider": "ollama",
-        "model": OLLAMA_MODEL
+        "model": OLLAMA_MODEL,
     }
 
 
@@ -42,10 +42,10 @@ def generate(payload: GenerateRequest):
                 "stream": False,
                 "options": {
                     "temperature": payload.temperature,
-                    "num_predict": payload.max_tokens
-                }
+                    "num_predict": payload.max_tokens,
+                },
             },
-            timeout=120
+            timeout=120,
         )
 
         response.raise_for_status()
@@ -55,18 +55,15 @@ def generate(payload: GenerateRequest):
             "provider": "ollama",
             "model": OLLAMA_MODEL,
             "prompt": payload.prompt,
-            "response": data.get("response", "").strip()
+            "response": data.get("response", "").strip(),
         }
 
     except requests.exceptions.ConnectionError:
         raise HTTPException(
             status_code=502,
-            detail="Cannot connect to Ollama. Make sure Ollama is running on http://localhost:11434"
+            detail="Cannot connect to Ollama. Make sure Ollama is running on http://localhost:11434",
         )
     except requests.exceptions.Timeout:
-        raise HTTPException(
-            status_code=504,
-            detail="Ollama request timed out"
-        )
+        raise HTTPException(status_code=504, detail="Ollama request timed out")
     except Exception as error:
         raise HTTPException(status_code=502, detail=str(error))

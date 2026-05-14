@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "format": "prettier --write . && ai-service/venv/bin/black ai-service",
+    "format:check": "prettier --check . && ai-service/venv/bin/black --check ai-service"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.3"
+  }
+}

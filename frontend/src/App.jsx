@@ -1,30 +1,30 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 export default function App() {
-  const [projectDescription, setProjectDescription] = useState('');
-  const [analysis, setAnalysis] = useState('');
+  const [projectDescription, setProjectDescription] = useState("");
+  const [analysis, setAnalysis] = useState("");
   const [metadata, setMetadata] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-    setError('');
-    setAnalysis('');
+    setError("");
+    setAnalysis("");
     setMetadata(null);
 
     try {
-      const res = await fetch('http://localhost:8000/api/security/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("http://localhost:8000/api/security/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectDescription }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || data.detail || 'API error');
+        setError(data.error || data.detail || "API error");
       } else {
         setAnalysis(data.analysis);
         setMetadata({
@@ -34,7 +34,7 @@ export default function App() {
         });
       }
     } catch (err) {
-      setError(err.message || 'Network error');
+      setError(err.message || "Network error");
     } finally {
       setLoading(false);
     }
@@ -61,7 +61,7 @@ export default function App() {
         />
 
         <button type="submit" disabled={loading || !projectDescription.trim()}>
-          {loading ? 'Analyzing...' : 'Run ISP Security Analysis'}
+          {loading ? "Analyzing..." : "Run ISP Security Analysis"}
         </button>
       </form>
 

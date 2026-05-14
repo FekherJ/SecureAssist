@@ -50,12 +50,34 @@ You are an information security project integration assistant.
 
 Analyze the following project from an ISP perspective.
 
-Return the answer with the following sections:
-1. Project summary
-2. Main security risks
-3. ISP questions to ask
-4. Missing documents
-5. Recommended actions
+Return ONLY valid JSON.
+Do not use markdown.
+Do not add explanations outside the JSON.
+
+The JSON format must be exactly:
+
+{
+  "projectSummary": "short summary of the project",
+  "mainSecurityRisks": [
+    "risk 1",
+    "risk 2",
+    "risk 3"
+  ],
+  "ispQuestions": [
+    "question 1",
+    "question 2",
+    "question 3"
+  ],
+  "missingDocuments": [
+    "document 1",
+    "document 2"
+  ],
+  "recommendedActions": [
+    "action 1",
+    "action 2",
+    "action 3"
+  ]
+}
 
 Focus on:
 - authentication
@@ -82,11 +104,20 @@ ${projectDescription}
       }
     );
 
+    let structuredAnalysis = null;
+
+    try {
+      structuredAnalysis = JSON.parse(response.data.response);
+    } catch (parseError) {
+      console.warn('Could not parse AI response as JSON');
+    }
+
     res.json({
       workflow: 'isp-security-analysis',
       projectDescription,
       prompt,
       analysis: response.data.response,
+      structuredAnalysis,
       provider: response.data.provider,
       model: response.data.model,
     });
