@@ -96,8 +96,9 @@ ${projectDescription}
       `${AI_SERVICE_URL}/generate`,
       {
         prompt,
-        temperature: 0.2,
-        max_tokens: 1000,
+        temperature: 0.1,
+        max_tokens: 2000,
+        response_format: 'json',
       },
       {
         headers: { 'Content-Type': 'application/json' },

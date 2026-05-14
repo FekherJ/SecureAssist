@@ -99,3 +99,41 @@ pre {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.analysis-grid {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.analysis-card {
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: #f1f5f9;
+}
+
+.analysis-card h2 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+}
+
+.analysis-card p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.analysis-card ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.analysis-card li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.empty-state {
+  color: #64748b;
+  font-style: italic;
+}

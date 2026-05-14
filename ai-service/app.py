@@ -15,7 +15,8 @@ app = FastAPI(title="SecureAssist AI Service")
 class GenerateRequest(BaseModel):
     prompt: str
     temperature: float = 0.3
-    max_tokens: int = 800
+    max_tokens: int = 1200
+    response_format: str | None = None
 
 
 @app.get("/health")
@@ -34,17 +35,22 @@ def generate(payload: GenerateRequest):
         raise HTTPException(status_code=400, detail="Prompt is required")
 
     try:
+        request_body = {
+            "model": OLLAMA_MODEL,
+            "prompt": payload.prompt,
+            "stream": False,
+            "options": {
+                "temperature": payload.temperature,
+                "num_predict": payload.max_tokens,
+            },
+        }
+
+        if payload.response_format:
+            request_body["format"] = payload.response_format
+
         response = requests.post(
             f"{OLLAMA_BASE_URL}/api/generate",
-            json={
-                "model": OLLAMA_MODEL,
-                "prompt": payload.prompt,
-                "stream": False,
-                "options": {
-                    "temperature": payload.temperature,
-                    "num_predict": payload.max_tokens,
-                },
-            },
+            json=request_body,
             timeout=120,
         )
 
