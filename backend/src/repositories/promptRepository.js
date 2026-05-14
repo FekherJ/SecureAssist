@@ -1,4 +1,4 @@
-const pool = require('./db');
+const pool = require('../db/pool');
 
 async function getActivePromptTemplate(useCase) {
   const result = await pool.query(
