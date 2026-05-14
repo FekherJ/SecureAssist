@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - "feature/**"
+      - "refactor/**"
+      - "chore/**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  quality-checks:
+    name: Quality checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix frontend
+
+      - name: Install AI service dependencies
+        run: |
+          python -m venv ai-service/venv
+          ai-service/venv/bin/pip install --upgrade pip
+          ai-service/venv/bin/pip install -r ai-service/requirements.txt
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Check backend app loads
+        run: node -e "require('./backend/src/app'); console.log('Backend app loaded successfully')"
+
+      - name: Check AI service syntax
+        run: ai-service/venv/bin/python -m py_compile ai-service/app.py
+
+      - name: Build frontend
+        run: npm run build --prefix frontend
