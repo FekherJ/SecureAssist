@@ -101,7 +101,27 @@ export default function App() {
 
           <article className="analysis-card">
             <h2>Main Security Risks</h2>
-            {renderList(structuredAnalysis.mainSecurityRisks)}
+
+            {structuredAnalysis.mainSecurityRisks &&
+            structuredAnalysis.mainSecurityRisks.length > 0 ? (
+              <div className="risk-list">
+                {structuredAnalysis.mainSecurityRisks.map((risk, index) => (
+                  <div className="risk-item" key={`${risk.title}-${index}`}>
+                    <div className="risk-header">
+                      <h3>{risk.title}</h3>
+                      <span
+                        className={`severity severity-${risk.severity?.toLowerCase()}`}
+                      >
+                        {risk.severity}
+                      </span>
+                    </div>
+                    <p>{risk.explanation}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="empty-state">No risk returned.</p>
+            )}
           </article>
 
           <article className="analysis-card">

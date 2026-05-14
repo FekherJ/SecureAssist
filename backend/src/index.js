@@ -59,10 +59,12 @@ The JSON format must be exactly:
 {
   "projectSummary": "short summary of the project",
   "mainSecurityRisks": [
-    "risk 1",
-    "risk 2",
-    "risk 3"
-  ],
+  {
+    "title": "risk title",
+    "severity": "Low | Medium | High | Critical",
+    "explanation": "short explanation of the risk"
+  }
+],
   "ispQuestions": [
     "question 1",
     "question 2",
@@ -78,6 +80,8 @@ The JSON format must be exactly:
     "action 3"
   ]
 }
+
+For each security risk, provide a severity level: Low, Medium, High, or Critical.
 
 Focus on:
 - authentication
