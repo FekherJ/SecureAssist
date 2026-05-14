@@ -16,6 +16,12 @@ async function getActivePromptTemplate(useCase) {
   return result.rows[0] || null;
 }
 
+async function checkDatabaseConnection() {
+  const result = await pool.query('SELECT 1 AS connected');
+  return result.rows[0]?.connected === 1;
+}
+
 module.exports = {
   getActivePromptTemplate,
+  checkDatabaseConnection,
 };
