@@ -34,6 +34,7 @@ export default function App() {
           workflow: data.workflow,
           provider: data.provider,
           model: data.model,
+          promptTemplate: data.promptTemplate,
         });
       }
     } catch (err) {
@@ -89,6 +90,13 @@ export default function App() {
           <span>Workflow: {metadata.workflow}</span>
           <span>Provider: {metadata.provider}</span>
           <span>Model: {metadata.model}</span>
+
+          {metadata.promptTemplate && (
+            <span>
+              Prompt: {metadata.promptTemplate.name}{" "}
+              {metadata.promptTemplate.version}
+            </span>
+          )}
         </div>
       )}
 
