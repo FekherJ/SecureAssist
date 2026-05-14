@@ -3,6 +3,8 @@ const cors = require('cors');
 const axios = require('axios');
 require('dotenv').config();
 
+const { getActivePromptTemplate } = require('./promptRepository');
+
 const app = express();
 const PORT = process.env.PORT || 8000;
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8001';
@@ -45,56 +47,15 @@ app.post('/api/security/analyze', async (req, res) => {
       });
     }
 
-    const prompt = `
-You are an information security project integration assistant.
+    const promptTemplate = await getActivePromptTemplate('ISP_SECURITY_ANALYSIS');
 
-Analyze the following project from an ISP perspective.
+    if (!promptTemplate) {
+      return res.status(500).json({
+        error: 'No active prompt template found for ISP security analysis',
+      });
+    }
 
-Return ONLY valid JSON.
-Do not use markdown.
-Do not add explanations outside the JSON.
-
-The JSON format must be exactly:
-
-{
-  "projectSummary": "short summary of the project",
-  "mainSecurityRisks": [
-  {
-    "title": "risk title",
-    "severity": "Low | Medium | High | Critical",
-    "explanation": "short explanation of the risk"
-  }
-],
-  "ispQuestions": [
-    "question 1",
-    "question 2",
-    "question 3"
-  ],
-  "missingDocuments": [
-    "document 1",
-    "document 2"
-  ],
-  "recommendedActions": [
-    "action 1",
-    "action 2",
-    "action 3"
-  ]
-}
-
-For each security risk, provide a severity level: Low, Medium, High, or Critical.
-
-Focus on:
-- authentication
-- authorization
-- data protection
-- API exposure
-- logging and monitoring
-- operational risks
-- compliance risks
-
-Project:
-${projectDescription}
-`;
+    const prompt = promptTemplate.template.replace('{{projectDescription}}', projectDescription);
 
     const response = await axios.post(
       `${AI_SERVICE_URL}/generate`,
@@ -120,6 +81,12 @@ ${projectDescription}
     res.json({
       workflow: 'isp-security-analysis',
       projectDescription,
+      promptTemplate: {
+        id: promptTemplate.id,
+        name: promptTemplate.name,
+        version: promptTemplate.version,
+        useCase: promptTemplate.use_case,
+      },
       prompt,
       analysis: response.data.response,
       structuredAnalysis,

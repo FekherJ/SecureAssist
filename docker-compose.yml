@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: secureassist-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: secureassist
+      POSTGRES_USER: secureassist_user
+      POSTGRES_PASSWORD: secureassist_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - secureassist_postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  secureassist_postgres_data:
