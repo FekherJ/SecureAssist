@@ -24,6 +24,14 @@ export default function Tabs({ activeTab, onTabChange }) {
       >
         Analysis History
       </button>
+
+      <button
+        type="button"
+        className={activeTab === "documents" ? "tab-active" : ""}
+        onClick={() => onTabChange("documents")}
+      >
+        Document Management
+      </button>
     </nav>
   );
 }
