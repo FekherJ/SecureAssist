@@ -26,6 +26,15 @@ body {
   margin-bottom: 1.5rem;
 }
 
+input {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid #cbd5e1;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
 .tabs button {
   margin-top: 0;
   background: #e2e8f0;
@@ -60,6 +69,7 @@ textarea {
   border: 1px solid #cbd5e1;
   font-size: 1rem;
   resize: vertical;
+  box-sizing: border-box;
 }
 
 button {
@@ -193,6 +203,39 @@ button:disabled {
 
 .toolbar {
   margin-bottom: 1rem;
+}
+
+.create-prompt-card {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.create-prompt-card h2 {
+  margin-top: 0;
+}
+
+.prompt-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 500;
+}
+
+.checkbox-row input {
+  width: auto;
+}
+
+.alert.success {
+  background: #dcfce7;
+  color: #166534;
 }
 
 .prompt-list {

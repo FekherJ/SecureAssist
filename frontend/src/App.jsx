@@ -14,8 +14,18 @@ export default function App() {
   const [prompts, setPrompts] = useState([]);
   const [promptsLoading, setPromptsLoading] = useState(false);
   const [promptsError, setPromptsError] = useState("");
-
   const [expandedPromptIds, setExpandedPromptIds] = useState([]);
+
+  const [newPrompt, setNewPrompt] = useState({
+    name: "ISP Security Analysis Prompt",
+    version: "",
+    useCase: DEFAULT_USE_CASE,
+    template: "",
+    isActive: false,
+  });
+  const [createPromptLoading, setCreatePromptLoading] = useState(false);
+  const [createPromptError, setCreatePromptError] = useState("");
+  const [createPromptSuccess, setCreatePromptSuccess] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -254,6 +264,54 @@ export default function App() {
     );
   };
 
+  const handleNewPromptChange = (event) => {
+    const { name, value, type, checked } = event.target;
+
+    setNewPrompt((currentPrompt) => ({
+      ...currentPrompt,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleCreatePrompt = async (event) => {
+    event.preventDefault();
+    setCreatePromptLoading(true);
+    setCreatePromptError("");
+    setCreatePromptSuccess("");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/prompts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newPrompt),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setCreatePromptError(
+          data.error || data.detail || "Failed to create prompt",
+        );
+        return;
+      }
+
+      setCreatePromptSuccess(`Prompt ${data.version} created successfully.`);
+      setNewPrompt({
+        name: "ISP Security Analysis Prompt",
+        version: "",
+        useCase: DEFAULT_USE_CASE,
+        template: "",
+        isActive: false,
+      });
+
+      await loadPrompts();
+    } catch (err) {
+      setCreatePromptError(err.message || "Network error");
+    } finally {
+      setCreatePromptLoading(false);
+    }
+  };
+
   const renderPromptManagement = () => (
     <>
       <header>
@@ -271,6 +329,79 @@ export default function App() {
       </div>
 
       {promptsError && <div className="alert error">{promptsError}</div>}
+
+      <section className="create-prompt-card">
+        <h2>Create New Prompt Version</h2>
+
+        <form onSubmit={handleCreatePrompt} className="prompt-form">
+          <label htmlFor="promptName">Name</label>
+          <input
+            id="promptName"
+            name="name"
+            value={newPrompt.name}
+            onChange={handleNewPromptChange}
+            placeholder="ISP Security Analysis Prompt"
+          />
+
+          <label htmlFor="promptVersion">Version</label>
+          <input
+            id="promptVersion"
+            name="version"
+            value={newPrompt.version}
+            onChange={handleNewPromptChange}
+            placeholder="v3"
+          />
+
+          <label htmlFor="promptUseCase">Use case</label>
+          <input
+            id="promptUseCase"
+            name="useCase"
+            value={newPrompt.useCase}
+            onChange={handleNewPromptChange}
+            placeholder="ISP_SECURITY_ANALYSIS"
+          />
+
+          <label htmlFor="promptTemplate">Template</label>
+          <textarea
+            id="promptTemplate"
+            name="template"
+            value={newPrompt.template}
+            onChange={handleNewPromptChange}
+            placeholder="Write the prompt template here. Use {{projectDescription}} where the project description should be injected."
+            rows="8"
+          />
+
+          <label className="checkbox-row">
+            <input
+              type="checkbox"
+              name="isActive"
+              checked={newPrompt.isActive}
+              onChange={handleNewPromptChange}
+            />
+            Activate this prompt immediately
+          </label>
+
+          <button
+            type="submit"
+            disabled={
+              createPromptLoading ||
+              !newPrompt.name.trim() ||
+              !newPrompt.version.trim() ||
+              !newPrompt.useCase.trim() ||
+              !newPrompt.template.trim()
+            }
+          >
+            {createPromptLoading ? "Creating..." : "Create prompt version"}
+          </button>
+        </form>
+
+        {createPromptError && (
+          <div className="alert error">{createPromptError}</div>
+        )}
+        {createPromptSuccess && (
+          <div className="alert success">{createPromptSuccess}</div>
+        )}
+      </section>
 
       <section className="prompt-list">
         {promptsLoading && <p className="empty-state">Loading prompts...</p>}
