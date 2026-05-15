@@ -214,6 +214,67 @@ button:disabled {
   margin-bottom: 1rem;
 }
 
+.history-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.history-card {
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.history-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.history-card-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.history-card-header p {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+}
+
+.history-model {
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.history-description {
+  margin-top: 0.75rem;
+}
+
+.history-description strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #0f172a;
+}
+
+.history-description p {
+  margin: 0;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.history-details {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
 .create-prompt-card {
   margin-bottom: 1.5rem;
   padding: 1.25rem;

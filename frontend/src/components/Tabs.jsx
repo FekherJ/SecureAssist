@@ -16,6 +16,14 @@ export default function Tabs({ activeTab, onTabChange }) {
       >
         Prompt Management
       </button>
+
+      <button
+        type="button"
+        className={activeTab === "history" ? "tab-active" : ""}
+        onClick={() => onTabChange("history")}
+      >
+        Analysis History
+      </button>
     </nav>
   );
 }

@@ -486,7 +486,7 @@ curl -X PATCH http://localhost:8000/api/prompts/1/activate
 
 Delete an inactive prompt version:
 
-```bash
+````bash
 curl -X DELETE http://localhost:8000/api/prompts/2
 
 
@@ -496,7 +496,7 @@ Go to the frontend folder:
 
 ```bash
 cd frontend
-```
+````
 
 Install dependencies:
 

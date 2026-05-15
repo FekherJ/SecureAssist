@@ -75,3 +75,14 @@ $$,
     true
 )
 ON CONFLICT DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS security_analysis_runs (
+    id SERIAL PRIMARY KEY,
+    project_description TEXT NOT NULL,
+    prompt_template_id INTEGER REFERENCES prompt_templates(id),
+    provider VARCHAR(100),
+    model VARCHAR(100),
+    structured_analysis JSONB,
+    raw_analysis TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

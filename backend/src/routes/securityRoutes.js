@@ -1,7 +1,10 @@
 const express = require('express');
 
-const { analyzeProjectSecurity } = require('../services/securityAnalysisService');
-
+const {
+  analyzeProjectSecurity,
+  getSecurityAnalysisHistoryItem,
+  listSecurityAnalysisHistory,
+} = require('../services/securityAnalysisService');
 const router = express.Router();
 
 router.post('/api/security/analyze', async (req, res) => {
@@ -22,6 +25,36 @@ router.post('/api/security/analyze', async (req, res) => {
     const status = error.status || error.response?.status || 500;
     res.status(status).json({
       error: 'Security analysis failed',
+      details: error.message,
+    });
+  }
+});
+
+router.get('/api/security/history', async (req, res) => {
+  try {
+    const history = await listSecurityAnalysisHistory();
+    res.json(history);
+  } catch (error) {
+    console.error('Security analysis history lookup failed', error.message || error);
+
+    const status = error.status || 500;
+    res.status(status).json({
+      error: 'Security analysis history lookup failed',
+      details: error.message,
+    });
+  }
+});
+
+router.get('/api/security/history/:id', async (req, res) => {
+  try {
+    const historyItem = await getSecurityAnalysisHistoryItem(Number(req.params.id));
+    res.json(historyItem);
+  } catch (error) {
+    console.error('Security analysis history item lookup failed', error.message || error);
+
+    const status = error.status || 500;
+    res.status(status).json({
+      error: 'Security analysis history item lookup failed',
       details: error.message,
     });
   }
