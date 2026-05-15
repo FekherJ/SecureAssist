@@ -158,6 +158,7 @@ GET /api/prompts
 GET /api/prompts/active?useCase=ISP_SECURITY_ANALYSIS
 POST /api/prompts
 PATCH /api/prompts/:id/activate
+DELETE /api/prompts/:id
 ```
 
 These endpoints allow the application to:
@@ -482,6 +483,12 @@ Activate a prompt version:
 ```bash
 curl -X PATCH http://localhost:8000/api/prompts/1/activate
 ```
+
+Delete an inactive prompt version:
+
+```bash
+curl -X DELETE http://localhost:8000/api/prompts/2
+
 
 ## Frontend setup
 
