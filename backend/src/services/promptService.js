@@ -3,6 +3,7 @@ const {
   getPromptTemplates,
   createPromptTemplate,
   activatePromptTemplate,
+  deletePromptTemplate,
 } = require('../repositories/promptRepository');
 
 function mapPromptTemplate(promptTemplate) {
@@ -60,9 +61,30 @@ async function activatePrompt(id) {
   return mapPromptTemplate(prompt);
 }
 
+async function deletePrompt(id) {
+  const deletedPrompt = await deletePromptTemplate(id);
+
+  if (!deletedPrompt) {
+    const error = new Error(
+      `Prompt template not found or cannot be deleted because it is active: ${id}`
+    );
+    error.status = 400;
+    throw error;
+  }
+
+  return {
+    id: deletedPrompt.id,
+    name: deletedPrompt.name,
+    version: deletedPrompt.version,
+    useCase: deletedPrompt.use_case,
+    isActive: deletedPrompt.is_active,
+  };
+}
+
 module.exports = {
   getActivePrompt,
   listPrompts,
   createPrompt,
   activatePrompt,
+  deletePrompt,
 };

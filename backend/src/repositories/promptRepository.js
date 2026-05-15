@@ -111,10 +111,25 @@ async function activatePromptTemplate(id) {
   }
 }
 
+async function deletePromptTemplate(id) {
+  const result = await pool.query(
+    `
+    DELETE FROM prompt_templates
+    WHERE id = $1
+      AND is_active = false
+    RETURNING id, name, version, use_case, is_active
+    `,
+    [id]
+  );
+
+  return result.rows[0] || null;
+}
+
 module.exports = {
   getActivePromptTemplate,
   checkDatabaseConnection,
   getPromptTemplates,
   createPromptTemplate,
   activatePromptTemplate,
+  deletePromptTemplate,
 };

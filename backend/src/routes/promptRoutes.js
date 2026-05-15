@@ -5,6 +5,7 @@ const {
   listPrompts,
   createPrompt,
   activatePrompt,
+  deletePrompt,
 } = require('../services/promptService');
 
 const router = express.Router();
@@ -66,6 +67,25 @@ router.patch('/api/prompts/:id/activate', async (req, res) => {
     const status = error.status || 500;
     res.status(status).json({
       error: 'Prompt activation failed',
+      details: error.message,
+    });
+  }
+});
+
+router.delete('/api/prompts/:id', async (req, res) => {
+  try {
+    const deletedPrompt = await deletePrompt(Number(req.params.id));
+
+    res.json({
+      message: 'Prompt deleted successfully',
+      prompt: deletedPrompt,
+    });
+  } catch (error) {
+    console.error('Prompt deletion failed', error.message || error);
+
+    const status = error.status || 500;
+    res.status(status).json({
+      error: 'Prompt deletion failed',
       details: error.message,
     });
   }

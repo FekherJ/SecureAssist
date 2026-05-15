@@ -46,6 +46,15 @@ input {
   color: #ffffff;
 }
 
+.danger-button {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.danger-button:hover {
+  background: #b91c1c;
+}
+
 header h1 {
   margin: 0 0 0.25rem;
   font-size: clamp(2rem, 2.5vw, 2.75rem);
