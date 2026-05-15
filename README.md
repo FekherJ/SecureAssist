@@ -5,7 +5,7 @@ SecureAssist is a hybrid GenAI pilot project for an ISP security assistant orche
 The goal of the project is to prototype an AI assistant that can support security project integration workflows by analyzing project descriptions and generating:
 
 - project summaries
-- security risks with severity levels
+- security risks with categories and severity levels
 - ISP questions
 - missing documents
 - recommended actions
@@ -16,9 +16,10 @@ The project uses a local LLM through Ollama, so it does not require a paid OpenA
 
 - `backend/`: Node.js API used as the main backend layer between the frontend, PostgreSQL and the AI service.
 - `ai-service/`: Python FastAPI microservice responsible for calling the local AI model through Ollama.
-- `frontend/`: React/Vite UI for entering project descriptions and displaying structured security analysis results.
+- `frontend/`: React/Vite UI for security analysis and prompt management.
 - `database/`: PostgreSQL initialization script for prompt templates.
 - `docs/`: project documentation, including local AI setup notes.
+- `.github/workflows/`: GitHub Actions CI configuration.
 
 ## Architecture
 
@@ -33,7 +34,16 @@ React Frontend
 → llama3.2:3b
 ```
 
-The frontend sends a project description to the Node.js backend.
+The frontend provides two main sections:
+
+- Security Analysis: submit a project description and display a structured security analysis.
+- Prompt Management: list prompt templates, inspect versions, and activate the prompt used by the analysis workflow.
+
+The Node.js backend follows a layered architecture:
+
+```text
+routes → services → repositories → database / external services
+```
 
 The backend loads the active prompt template from PostgreSQL, injects the project description into the prompt, then sends the final prompt to the Python FastAPI AI service.
 
@@ -62,6 +72,39 @@ React
 ```
 
 This allows the project to run locally without using a paid external AI API.
+
+## Backend architecture
+
+The backend is organized with a layered structure:
+
+```text
+backend/src/
+├── app.js
+├── index.js
+├── db/
+│   └── pool.js
+├── repositories/
+│   └── promptRepository.js
+├── routes/
+│   ├── aiRoutes.js
+│   ├── healthRoutes.js
+│   ├── promptRoutes.js
+│   └── securityRoutes.js
+└── services/
+    ├── aiService.js
+    ├── healthService.js
+    ├── promptService.js
+    └── securityAnalysisService.js
+```
+
+Responsibilities:
+
+- `routes/`: HTTP endpoints and request/response handling.
+- `services/`: business logic and workflow orchestration.
+- `repositories/`: database access.
+- `db/`: PostgreSQL connection pool.
+- `aiService.js`: communication with the Python AI service.
+- `securityAnalysisService.js`: security analysis workflow orchestration.
 
 ## Prompt versioning with PostgreSQL
 
@@ -103,6 +146,28 @@ is_active
 created_at
 updated_at
 ```
+
+## Prompt management
+
+SecureAssist exposes prompt management endpoints through the backend.
+
+Available endpoints:
+
+```text
+GET /api/prompts
+GET /api/prompts/active?useCase=ISP_SECURITY_ANALYSIS
+POST /api/prompts
+PATCH /api/prompts/:id/activate
+```
+
+These endpoints allow the application to:
+
+- list prompt templates
+- retrieve the active prompt for a use case
+- create a new prompt version
+- activate a specific prompt version
+
+The frontend includes a Prompt Management tab that displays available prompt templates, their versions, their active/inactive status, and allows activating another prompt version.
 
 ## Prerequisites
 
@@ -205,6 +270,13 @@ If the database already exists and the init script needs to be applied manually:
 
 ```bash
 docker exec -i secureassist-postgres psql -U secureassist_user -d secureassist < database/init.sql
+```
+
+Check prompt templates:
+
+```sql
+SELECT id, name, version, use_case, is_active
+FROM prompt_templates;
 ```
 
 ## AI service setup
@@ -314,6 +386,21 @@ Test the backend health endpoint:
 curl http://localhost:8000/health
 ```
 
+Test the database health endpoint:
+
+```bash
+curl http://localhost:8000/health/db
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok",
+  "database": "connected"
+}
+```
+
 Test the ISP security analysis endpoint:
 
 ```bash
@@ -341,17 +428,59 @@ Expected response includes:
   "promptTemplate": {
     "id": 1,
     "name": "ISP Security Analysis Prompt",
-    "version": "v1",
+    "version": "v2",
     "useCase": "ISP_SECURITY_ANALYSIS"
   },
   "structuredAnalysis": {
     "projectSummary": "...",
-    "mainSecurityRisks": [],
+    "mainSecurityRisks": [
+      {
+        "title": "...",
+        "category": "...",
+        "severity": "...",
+        "impact": "...",
+        "recommendedControl": "..."
+      }
+    ],
     "ispQuestions": [],
     "missingDocuments": [],
     "recommendedActions": []
   }
 }
+```
+
+## Prompt management API examples
+
+List prompts:
+
+```bash
+curl "http://localhost:8000/api/prompts?useCase=ISP_SECURITY_ANALYSIS"
+```
+
+Get active prompt:
+
+```bash
+curl "http://localhost:8000/api/prompts/active?useCase=ISP_SECURITY_ANALYSIS"
+```
+
+Create a new prompt version:
+
+```bash
+curl -X POST http://localhost:8000/api/prompts \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "ISP Security Analysis Prompt",
+    "version": "v3",
+    "useCase": "ISP_SECURITY_ANALYSIS",
+    "template": "You are an information security assistant. Analyze the following project and return ONLY valid JSON. Project: {{projectDescription}}",
+    "isActive": false
+  }'
+```
+
+Activate a prompt version:
+
+```bash
+curl -X PATCH http://localhost:8000/api/prompts/1/activate
 ```
 
 ## Frontend setup
@@ -379,6 +508,13 @@ The frontend should be available at:
 ```text
 http://localhost:5173
 ```
+
+The frontend includes two tabs:
+
+- Security Analysis
+- Prompt Management
+
+The Prompt Management tab allows reviewing PostgreSQL-backed prompt templates, showing or hiding prompt content, and activating a prompt version from the UI.
 
 Expected full flow:
 
@@ -408,6 +544,28 @@ Check formatting:
 
 ```bash
 npm run format:check
+```
+
+## GitHub Actions CI
+
+The project includes a GitHub Actions workflow for basic quality checks.
+
+The CI validates:
+
+- root dependency installation
+- backend dependency installation
+- frontend dependency installation
+- AI service dependency installation
+- Prettier formatting
+- Black formatting
+- backend app loading
+- Python syntax
+- frontend build
+
+Workflow file:
+
+```text
+.github/workflows/ci.yml
 ```
 
 ## Useful commands
@@ -478,14 +636,18 @@ Implemented:
 
 - Local AI model integration with Ollama
 - Python FastAPI AI service
-- Node.js backend
+- Node.js backend with layered architecture
 - React frontend
+- Security Analysis UI
+- Prompt Management UI
 - Structured JSON output
-- Security risk severity levels
+- Enhanced security risk schema with title, category, severity, impact and recommended control
 - PostgreSQL-based prompt versioning
+- Prompt management endpoints
 - Active prompt template loaded from database
-- Frontend display of structured security analysis
+- Database health check endpoint
 - Project-wide formatting with Prettier and Black
+- GitHub Actions CI
 
 ## Target use case
 
@@ -501,7 +663,9 @@ Expected output:
 
 ```text
 - Project summary
-- Main security risks with severity levels
+- Main security risks with categories and severity levels
+- Security impact for each risk
+- Recommended control for each risk
 - ISP questions to ask
 - Missing documents
 - Recommended actions
@@ -511,12 +675,12 @@ Expected output:
 
 Potential next improvements:
 
-- Add backend database health check
-- Add GitHub Actions
-- Add endpoint to list active prompt templates
-- Add prompt creation and activation endpoints
+- Add a frontend form to create new prompt versions
+- Add prompt editing support
+- Add prompt validation before activation
 - Add document ingestion
 - Add RAG-based document analysis
+- Add security analysis history
 - Add authentication later if needed
 
 ## Notes
