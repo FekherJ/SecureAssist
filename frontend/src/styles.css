@@ -106,6 +106,28 @@ button:disabled {
   border: 1px solid #e2e8f0;
 }
 
+.risk-category {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.risk-detail {
+  margin-top: 0.75rem;
+}
+
+.risk-detail strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #0f172a;
+}
+
+.risk-detail p {
+  margin: 0;
+  color: #334155;
+  line-height: 1.5;
+}
+
 .risk-header {
   display: flex;
   align-items: center;
