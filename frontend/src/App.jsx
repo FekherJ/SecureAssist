@@ -1,12 +1,53 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const API_BASE_URL = "http://localhost:8000";
+const DEFAULT_USE_CASE = "ISP_SECURITY_ANALYSIS";
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState("analysis");
+
   const [projectDescription, setProjectDescription] = useState("");
   const [structuredAnalysis, setStructuredAnalysis] = useState(null);
   const [rawAnalysis, setRawAnalysis] = useState("");
   const [metadata, setMetadata] = useState(null);
+
+  const [prompts, setPrompts] = useState([]);
+  const [promptsLoading, setPromptsLoading] = useState(false);
+  const [promptsError, setPromptsError] = useState("");
+
+  const [expandedPromptIds, setExpandedPromptIds] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const loadPrompts = async () => {
+    setPromptsLoading(true);
+    setPromptsError("");
+
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/prompts?useCase=${DEFAULT_USE_CASE}`,
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPromptsError(data.error || data.detail || "Failed to load prompts");
+      } else {
+        setPrompts(data);
+      }
+    } catch (err) {
+      setPromptsError(err.message || "Network error");
+    } finally {
+      setPromptsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "prompts") {
+      loadPrompts();
+    }
+  }, [activeTab]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -17,7 +58,7 @@ export default function App() {
     setMetadata(null);
 
     try {
-      const res = await fetch("http://localhost:8000/api/security/analyze", {
+      const res = await fetch(`${API_BASE_URL}/api/security/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectDescription }),
@@ -44,6 +85,32 @@ export default function App() {
     }
   };
 
+  const handleActivatePrompt = async (promptId) => {
+    setPromptsError("");
+
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/prompts/${promptId}/activate`,
+        {
+          method: "PATCH",
+        },
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPromptsError(
+          data.error || data.detail || "Failed to activate prompt",
+        );
+        return;
+      }
+
+      await loadPrompts();
+    } catch (err) {
+      setPromptsError(err.message || "Network error");
+    }
+  };
+
   const renderList = (items) => {
     if (!items || items.length === 0) {
       return <p className="empty-state">No item returned.</p>;
@@ -58,8 +125,8 @@ export default function App() {
     );
   };
 
-  return (
-    <div className="app-shell">
+  const renderSecurityAnalysis = () => (
+    <>
       <header>
         <h1>SecureAssist - ISP Security Assistant</h1>
         <p>
@@ -90,7 +157,6 @@ export default function App() {
           <span>Workflow: {metadata.workflow}</span>
           <span>Provider: {metadata.provider}</span>
           <span>Model: {metadata.model}</span>
-
           {metadata.promptTemplate && (
             <span>
               Prompt: {metadata.promptTemplate.name}{" "}
@@ -177,6 +243,115 @@ export default function App() {
           </section>
         )
       )}
+    </>
+  );
+
+  const togglePromptPreview = (promptId) => {
+    setExpandedPromptIds((currentIds) =>
+      currentIds.includes(promptId)
+        ? currentIds.filter((id) => id !== promptId)
+        : [...currentIds, promptId],
+    );
+  };
+
+  const renderPromptManagement = () => (
+    <>
+      <header>
+        <h1>Prompt Management</h1>
+        <p>
+          Review and activate PostgreSQL-backed prompt templates used by the
+          security analysis workflow.
+        </p>
+      </header>
+
+      <div className="toolbar">
+        <button type="button" onClick={loadPrompts} disabled={promptsLoading}>
+          {promptsLoading ? "Refreshing..." : "Refresh prompts"}
+        </button>
+      </div>
+
+      {promptsError && <div className="alert error">{promptsError}</div>}
+
+      <section className="prompt-list">
+        {promptsLoading && <p className="empty-state">Loading prompts...</p>}
+
+        {!promptsLoading && prompts.length === 0 && (
+          <p className="empty-state">No prompt template found.</p>
+        )}
+
+        {prompts.map((prompt) => (
+          <article className="prompt-card" key={prompt.id}>
+            <div className="prompt-card-header">
+              <div>
+                <h2>{prompt.name}</h2>
+                <p>{prompt.useCase}</p>
+              </div>
+
+              <span
+                className={
+                  prompt.isActive ? "status-active" : "status-inactive"
+                }
+              >
+                {prompt.isActive ? "Active" : "Inactive"}
+              </span>
+            </div>
+
+            <div className="prompt-meta">
+              <span>Version: {prompt.version}</span>
+              <span>ID: {prompt.id}</span>
+            </div>
+
+            <div className="prompt-actions">
+              <button
+                type="button"
+                onClick={() => togglePromptPreview(prompt.id)}
+              >
+                {expandedPromptIds.includes(prompt.id)
+                  ? "Hide prompt"
+                  : "Show prompt"}
+              </button>
+
+              {!prompt.isActive && (
+                <button
+                  type="button"
+                  onClick={() => handleActivatePrompt(prompt.id)}
+                >
+                  Activate this prompt
+                </button>
+              )}
+            </div>
+
+            {expandedPromptIds.includes(prompt.id) && (
+              <pre className="prompt-template-preview">{prompt.template}</pre>
+            )}
+          </article>
+        ))}
+      </section>
+    </>
+  );
+
+  return (
+    <div className="app-shell">
+      <nav className="tabs">
+        <button
+          type="button"
+          className={activeTab === "analysis" ? "tab-active" : ""}
+          onClick={() => setActiveTab("analysis")}
+        >
+          Security Analysis
+        </button>
+        <button
+          type="button"
+          className={activeTab === "prompts" ? "tab-active" : ""}
+          onClick={() => setActiveTab("prompts")}
+        >
+          Prompt Management
+        </button>
+      </nav>
+
+      {activeTab === "analysis"
+        ? renderSecurityAnalysis()
+        : renderPromptManagement()}
     </div>
   );
 }

@@ -7,7 +7,7 @@ async function getActivePromptTemplate(useCase) {
     FROM prompt_templates
     WHERE use_case = $1
       AND is_active = true
-    ORDER BY created_at DESC
+    ORDER BY is_active DESC, created_at DESC
     LIMIT 1
     `,
     [useCase]
@@ -35,7 +35,7 @@ async function getPromptTemplates(useCase) {
     SELECT id, name, version, use_case, template, is_active, created_at, updated_at
     FROM prompt_templates
     ${whereClause}
-    ORDER BY created_at DESC
+    ORDER BY is_active DESC, created_at DESC
     `,
     values
   );
