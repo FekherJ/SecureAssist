@@ -135,6 +135,36 @@ export default function App() {
     );
   };
 
+  const normalizeRisk = (risk) => {
+    if (typeof risk === "string") {
+      return {
+        title: risk,
+        category: "General",
+        severity: "Medium",
+        impact: "",
+        recommendedControl: "",
+      };
+    }
+
+    return {
+      title:
+        risk.title ||
+        risk.risk ||
+        risk.name ||
+        risk.description ||
+        "Security risk",
+      category: risk.category || risk.type || "General",
+      severity: risk.severity || risk.level || "Medium",
+      impact: risk.impact || risk.explanation || risk.description || "",
+      recommendedControl:
+        risk.recommendedControl ||
+        risk.recommendation ||
+        risk.mitigation ||
+        risk.control ||
+        "",
+    };
+  };
+
   const renderSecurityAnalysis = () => (
     <>
       <header>
@@ -180,7 +210,11 @@ export default function App() {
         <section className="analysis-grid">
           <article className="analysis-card">
             <h2>Project Summary</h2>
-            <p>{structuredAnalysis.projectSummary}</p>
+            <p>
+              {structuredAnalysis.projectSummary ||
+                structuredAnalysis.summary ||
+                "No project summary returned."}
+            </p>
           </article>
 
           <article className="analysis-card">
@@ -189,41 +223,48 @@ export default function App() {
             {structuredAnalysis.mainSecurityRisks &&
             structuredAnalysis.mainSecurityRisks.length > 0 ? (
               <div className="risk-list">
-                {structuredAnalysis.mainSecurityRisks.map((risk, index) => (
-                  <div className="risk-item" key={`${risk.title}-${index}`}>
-                    <div className="risk-header">
-                      <div>
-                        <h3>{risk.title}</h3>
-                        {risk.category && (
-                          <p className="risk-category">{risk.category}</p>
-                        )}
+                {structuredAnalysis.mainSecurityRisks.map((rawRisk, index) => {
+                  const risk = normalizeRisk(rawRisk);
+
+                  return (
+                    <div className="risk-item" key={`${risk.title}-${index}`}>
+                      <div className="risk-header">
+                        <div>
+                          <h3>{risk.title}</h3>
+                          {risk.category && (
+                            <p className="risk-category">{risk.category}</p>
+                          )}
+                        </div>
+
+                        <span
+                          className={`severity severity-${risk.severity?.toLowerCase()}`}
+                        >
+                          {risk.severity}
+                        </span>
                       </div>
-                      <span
-                        className={`severity severity-${risk.severity?.toLowerCase()}`}
-                      >
-                        {risk.severity}
-                      </span>
+
+                      {risk.impact && (
+                        <div className="risk-detail">
+                          <strong>Impact:</strong>
+                          <p>{risk.impact}</p>
+                        </div>
+                      )}
+
+                      {risk.recommendedControl && (
+                        <div className="risk-detail">
+                          <strong>Recommended control:</strong>
+                          <p>{risk.recommendedControl}</p>
+                        </div>
+                      )}
+
+                      {!risk.impact && !risk.recommendedControl && (
+                        <p className="empty-state">
+                          No detailed impact or control returned.
+                        </p>
+                      )}
                     </div>
-
-                    {risk.impact && (
-                      <div className="risk-detail">
-                        <strong>Impact:</strong>
-                        <p>{risk.impact}</p>
-                      </div>
-                    )}
-
-                    {risk.recommendedControl && (
-                      <div className="risk-detail">
-                        <strong>Recommended control:</strong>
-                        <p>{risk.recommendedControl}</p>
-                      </div>
-                    )}
-
-                    {!risk.impact &&
-                      !risk.recommendedControl &&
-                      risk.explanation && <p>{risk.explanation}</p>}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="empty-state">No risk returned.</p>
