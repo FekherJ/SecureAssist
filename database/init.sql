@@ -18,7 +18,7 @@ INSERT INTO prompt_templates (
 )
 VALUES (
     'ISP Security Analysis Prompt',
-    'v1',
+    'v2',
     'ISP_SECURITY_ANALYSIS',
     $$
 You are an information security project integration assistant.
@@ -34,12 +34,14 @@ The JSON format must be exactly:
 {
   "projectSummary": "short summary of the project",
   "mainSecurityRisks": [
-    {
-      "title": "risk title",
-      "severity": "Low | Medium | High | Critical",
-      "explanation": "short explanation of the risk"
-    }
-  ],
+  {
+    "title": "risk title",
+    "category": "risk category",
+    "severity": "Low | Medium | High | Critical",
+    "impact": "business or security impact of the risk",
+    "recommendedControl": "recommended security control to mitigate the risk"
+  }
+],
   "ispQuestions": [
     "question 1",
     "question 2",
